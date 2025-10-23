@@ -3,195 +3,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Screenshot and annotation tool for visual communication">
-    <meta name="theme-color" content="#4A90E2">
-    <title>Annotation Tool</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self';">
+    <title>Screenshot Annotation Tool</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Header -->
     <header class="app-header">
-        <h1 class="app-title">Annotate Screenshots</h1>
-        <p class="app-subtitle">Screenshot. Annotate. Share.</p>
+        <div class="header-content">
+            <div class="header-left">
+                <h1 class="app-title">📸 The Deets</h1>
+                <p class="app-subtitle">Screenshot and Annotation Utility</p>
+            </div>
+            <div class="header-right">
+                <button id="guide-btn" class="btn btn--icon" aria-label="Open user guide" title="User Guide">
+                    ❓
+                </button>
+                <button id="theme-btn" class="btn btn--icon" aria-label="Toggle theme" title="Toggle Theme">
+                    <span id="theme-icon">🌙</span>
+                </button>
+            </div>
+        </div>
     </header>
 
+    <!-- Main Content -->
     <main class="app-main">
+        <!-- Notification -->
+        <div id="notification" class="notification notification--hidden" role="status" aria-live="polite"></div>
+
         <!-- Capture Section -->
-        <section id="capture-section" class="section section--active">
+        <section id="capture-section" class="section">
             <div class="section__header">
-                <h2 class="section__title">Capture</h2>
+                <h2 class="section__title">📷 Capture or Upload</h2>
             </div>
-            
+
             <div class="capture-options">
-                <button id="capture-screen-btn" class="btn btn--primary" aria-label="Capture entire screen">
-                    <svg class="btn__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                        <rect x="2" y="2" width="20" height="20" rx="2" stroke-width="2"/>
-                    </svg>
+                <button id="capture-screen-btn" class="btn btn--primary btn--large" data-action="capture-screen">
+                    <span class="btn__icon">🖥️</span>
                     <span>Capture Screen</span>
                 </button>
-                
-                <button id="capture-area-btn" class="btn btn--secondary" aria-label="Select area to capture">
-                    <svg class="btn__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                        <rect x="4" y="4" width="16" height="16" rx="1" stroke-width="2" stroke-dasharray="4 2"/>
-                    </svg>
+
+                <button id="capture-area-btn" class="btn btn--primary btn--large" data-action="capture-area">
+                    <span class="btn__icon">✂️</span>
                     <span>Capture Area</span>
                 </button>
-                
-                <label for="image-upload" class="btn btn--secondary" tabindex="0" role="button" aria-label="Import existing image">
-                    <svg class="btn__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                    </svg>
-                    <span>Import Image</span>
-                    <input type="file" id="image-upload" accept="image/*" hidden>
+
+                <label for="image-upload" class="btn btn--secondary btn--large">
+                    <span class="btn__icon">📁</span>
+                    <span>Upload Image</span>
+                    <input type="file" id="image-upload" accept="image/*" class="sr-only">
                 </label>
             </div>
-            
-            <div id="notification" class="notification notification--hidden" role="status" aria-live="polite"></div>
         </section>
 
         <!-- Editor Section -->
         <section id="editor-section" class="section section--hidden">
             <div class="section__header">
-                <h2 class="section__title">Annotate</h2>
-                <button id="back-to-capture" class="btn btn--text" aria-label="Back to capture">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                    </svg>
-                    Back
+                <h2 class="section__title">✏️ Edit & Annotate</h2>
+                <button id="back-to-capture" class="btn btn--text" data-action="back">
+                    <span class="btn__icon">←</span>
+                    <span>Back</span>
                 </button>
             </div>
 
             <div class="editor-container">
-                <div class="toolbar">
-                    <div class="toolbar__group">
-                        <button id="tool-arrow" class="tool-btn tool-btn--active" data-tool="arrow" aria-label="Arrow tool" aria-pressed="true">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                            </svg>
+                <!-- Toolbar -->
+                <div class="toolbar" role="toolbar" aria-label="Annotation tools">
+                    <div class="toolbar__group" aria-label="Drawing tools">
+                        <button class="tool-btn tool-btn--active" data-tool="arrow" aria-label="Arrow tool" title="Arrow (→)">
+                            ➡️
                         </button>
-                        
-                        <button id="tool-rect" class="tool-btn" data-tool="rect" aria-label="Rectangle tool" aria-pressed="false">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <rect x="3" y="3" width="18" height="18" rx="2" stroke-width="2"/>
-                            </svg>
+                        <button class="tool-btn" data-tool="rect" aria-label="Rectangle tool" title="Rectangle (▭)">
+                            ▭
                         </button>
-                        
-                        <button id="tool-circle" class="tool-btn" data-tool="circle" aria-label="Circle tool" aria-pressed="false">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <circle cx="12" cy="12" r="9" stroke-width="2"/>
-                            </svg>
+                        <button class="tool-btn" data-tool="circle" aria-label="Circle tool" title="Circle (○)">
+                            ○
                         </button>
-                        
-                        <button id="tool-text" class="tool-btn" data-tool="text" aria-label="Text tool" aria-pressed="false">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
-                            </svg>
+                        <button class="tool-btn" data-tool="highlight" aria-label="Highlight tool" title="Highlight (✨)">
+                            ✨
                         </button>
-                        
-                        <button id="tool-highlight" class="tool-btn" data-tool="highlight" aria-label="Highlight tool" aria-pressed="false">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                            </svg>
+                        <button class="tool-btn" data-tool="blur" aria-label="Blur tool" title="Blur/Pixelate (🔒)">
+                            🔒
                         </button>
-                        
-                        <button id="tool-blur" class="tool-btn" data-tool="blur" aria-label="Blur tool" aria-pressed="false">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <circle cx="12" cy="12" r="3" stroke-width="2"/>
-                                <path stroke-linecap="round" stroke-width="2" d="M12 1v6m0 6v10M1 12h6m6 0h10"/>
-                            </svg>
+                        <button class="tool-btn" data-tool="text" aria-label="Text tool" title="Add Text (T)">
+                            T
                         </button>
                     </div>
 
-                    <div class="toolbar__group">
-                        <label class="color-picker-label">
-                            <span class="sr-only">Choose color</span>
-                            <input type="color" id="color-picker" value="#FF4D4F" aria-label="Color picker">
+                    <div class="toolbar__divider"></div>
+
+                    <div class="toolbar__group" aria-label="Style options">
+                        <label class="color-picker-label" for="color-picker" title="Choose color">
+                            <input type="color" id="color-picker" value="#FF4D4F" aria-label="Annotation color">
                         </label>
-                        
-                        <label class="slider-label">
+
+                        <label class="slider-label" title="Stroke width">
                             <span class="sr-only">Stroke width</span>
                             <input type="range" id="stroke-width" min="1" max="10" value="3" aria-label="Stroke width">
                         </label>
                     </div>
 
-                    <div class="toolbar__group">
-                        <button id="undo-btn" class="tool-btn" aria-label="Undo last action" disabled>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
-                            </svg>
+                    <div class="toolbar__divider"></div>
+
+                    <div class="toolbar__group" aria-label="Actions">
+                        <button id="undo-btn" class="btn btn--secondary" disabled data-action="undo" title="Undo (Ctrl+Z)">
+                            <span class="btn__icon">↩️</span>
+                            <span>Undo</span>
                         </button>
-                        
-                        <button id="clear-btn" class="tool-btn" aria-label="Clear all annotations">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
+                        <button id="clear-btn" class="btn btn--secondary" data-action="clear" title="Clear all">
+                            <span class="btn__icon">🗑️</span>
+                            <span>Clear</span>
                         </button>
                     </div>
                 </div>
 
+                <!-- Canvas -->
                 <div class="canvas-wrapper">
                     <canvas id="editor-canvas" aria-label="Annotation canvas"></canvas>
                 </div>
 
+                <!-- Editor Actions -->
                 <div class="editor-actions">
-                    <button id="download-btn" class="btn btn--primary">
-                        <svg class="btn__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                        </svg>
-                        Download PNG
+                    <button id="download-btn" class="btn btn--primary" data-action="download">
+                        <span class="btn__icon">💾</span>
+                        <span>Download</span>
                     </button>
-                    
-                    <button id="share-btn" class="btn btn--secondary">
-                        <svg class="btn__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
-                        </svg>
-                        Share
+                    <button id="share-btn" class="btn btn--secondary" data-action="share">
+                        <span class="btn__icon">📤</span>
+                        <span>Share/Copy</span>
                     </button>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- Area Selection Overlay (Hidden by default) -->
+    <!-- Area Selection Overlay -->
     <div id="area-selection-overlay" class="area-overlay area-overlay--hidden">
         <div class="area-selection-header">
-            <p class="area-selection-instructions">Click and drag to select an area</p>
-            <button id="cancel-area-selection" class="btn btn--text btn--cancel" aria-label="Cancel area selection">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-                Cancel
-            </button>
+            <p class="area-selection-instructions">✂️ Click and drag to select an area</p>
+            <button id="cancel-area-selection" class="btn btn--cancel">❌ Cancel</button>
         </div>
         <canvas id="area-selection-canvas"></canvas>
     </div>
 
-    <!-- Custom Confirmation Modal -->
-    <div id="confirm-modal" class="modal modal--hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-        <div class="modal__overlay"></div>
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="modal modal--hidden" role="dialog" aria-labelledby="modal-title" aria-modal="true">
+        <div class="modal__overlay" data-close-modal></div>
         <div class="modal__content">
-            <h3 id="modal-title" class="modal__title">Confirm Action</h3>
+            <h3 id="modal-title" class="modal__title">⚠️ Confirm Action</h3>
             <p id="modal-message" class="modal__message"></p>
             <div class="modal__actions">
-                <button id="modal-cancel" class="btn btn--secondary">Cancel</button>
-                <button id="modal-confirm" class="btn btn--primary">Confirm</button>
+                <button id="modal-cancel" class="btn btn--secondary" data-action="modal-cancel">Cancel</button>
+                <button id="modal-confirm" class="btn btn--primary" data-action="modal-confirm">Confirm</button>
             </div>
         </div>
     </div>
 
-    <!-- Custom Text Input Modal -->
-    <div id="text-modal" class="modal modal--hidden" role="dialog" aria-modal="true" aria-labelledby="text-modal-title">
-        <div class="modal__overlay"></div>
+    <!-- Text Input Modal -->
+    <div id="text-modal" class="modal modal--hidden" role="dialog" aria-labelledby="text-modal-title" aria-modal="true">
+        <div class="modal__overlay" data-close-modal></div>
         <div class="modal__content">
-            <h3 id="text-modal-title" class="modal__title">Add Text</h3>
-            <input type="text" id="text-modal-input" class="modal__input" placeholder="Enter text..." aria-label="Text input">
+            <h3 id="text-modal-title" class="modal__title">📝 Add Text</h3>
+            <input type="text" id="text-modal-input" class="modal__input" placeholder="Enter your text..." maxlength="100" aria-label="Text annotation">
             <div class="modal__actions">
-                <button id="text-modal-cancel" class="btn btn--secondary">Cancel</button>
-                <button id="text-modal-ok" class="btn btn--primary">Add</button>
+                <button id="text-modal-cancel" class="btn btn--secondary" data-action="text-cancel">Cancel</button>
+                <button id="text-modal-ok" class="btn btn--primary" data-action="text-ok">Add</button>
             </div>
         </div>
+    </div>
+
+    <!-- User Guide Modal -->
+    <div id="guide-modal" class="modal modal--hidden" role="dialog" aria-labelledby="guide-modal-title" aria-modal="true">
+        <div class="modal__overlay" data-close-modal></div>
+        <div class="modal__content modal__content--large">
+            <h3 id="guide-modal-title" class="modal__title">📚 User Guide</h3>
+            <div class="guide-content">
+                <section class="guide-section">
+                    <h4>🚀 Getting Started</h4>
+                    <ol>
+                        <li><strong>Capture Screen:</strong> Click "🖥️ Capture Screen" to capture your entire screen</li>
+                        <li><strong>Capture Area:</strong> Click "✂️ Capture Area" to select a specific region</li>
+                        <li><strong>Upload Image:</strong> Click "📁 Upload Image" to import an existing image</li>
+                    </ol>
+                </section>
+
+                <section class="guide-section">
+                    <h4>✏️ Annotation Tools</h4>
+                    <ul>
+                        <li><strong>➡️ Arrow:</strong> Draw arrows to point at important areas</li>
+                        <li><strong>▭ Rectangle:</strong> Draw rectangular boxes</li>
+                        <li><strong>○ Circle:</strong> Draw circles around elements</li>
+                        <li><strong>✨ Highlight:</strong> Highlight text or areas with semi-transparent color</li>
+                        <li><strong>🔒 Blur:</strong> Pixelate sensitive information (can be undone!)</li>
+                        <li><strong>T Text:</strong> Add text annotations</li>
+                    </ul>
+                </section>
+
+                <section class="guide-section">
+                    <h4>🎨 Customization</h4>
+                    <ul>
+                        <li>Use the <strong>color picker</strong> to change annotation colors</li>
+                        <li>Adjust the <strong>slider</strong> to change line thickness</li>
+                        <li>Press <strong>↩️ Undo</strong> to remove the last annotation</li>
+                        <li>Press <strong>🗑️ Clear</strong> to remove all annotations</li>
+                    </ul>
+                </section>
+
+                <section class="guide-section">
+                    <h4>💾 Saving & Sharing</h4>
+                    <ul>
+                        <li><strong>💾 Download:</strong> Save the annotated image to your device</li>
+                        <li><strong>📤 Share/Copy:</strong> Share via system dialog or copy to clipboard</li>
+                    </ul>
+                </section>
+
+                <section class="guide-section">
+                    <h4>⚡ Keyboard Shortcuts</h4>
+                    <ul>
+                        <li><strong>Ctrl+Z:</strong> Undo last annotation</li>
+                        <li><strong>Escape:</strong> Close modals or cancel operations</li>
+                    </ul>
+                </section>
+
+                <section class="guide-section">
+                    <h4>🔒 Privacy & Security</h4>
+                    <p>All processing happens <strong>locally in your browser</strong>. No data is sent to any server. Your screenshots and annotations remain private on your device.</p>
+                </section>
+            </div>
+            <div class="modal__actions">
+                <button id="guide-close" class="btn btn--primary" data-action="guide-close">Got it! ✓</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Indicator -->
+    <div id="progress-indicator" class="progress-indicator progress-indicator--hidden">
+        <div class="progress-spinner"></div>
+        <p class="progress-message">Processing...</p>
     </div>
 
     <script src="app.js"></script>
